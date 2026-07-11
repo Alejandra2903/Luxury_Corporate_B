@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -56,6 +58,27 @@ class AuthAndConsumoIntegrationTests {
 				.andExpect(status().isFound())
 				.andExpect(redirectedUrl("/dashboard"))
 				.andExpect(cookie().exists("tokenAcceso"));
+	}
+
+	@Test
+	void apiLoginDevuelveTokenYUsuario() throws Exception {
+		mockMvc.perform(post("/api/auth/login")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content("""
+						{"identificador":"admin@luxury.com","contrasena":"admin123"}
+						"""))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("$.token").isString())
+				.andExpect(jsonPath("$.tipo").value("Bearer"))
+				.andExpect(jsonPath("$.usuario.roles").value("ADMIN"));
+	}
+
+	@Test
+	void apiProtegidaSinTokenDevuelveJsonNoAutorizado() throws Exception {
+		mockMvc.perform(get("/api/dashboard/resumen"))
+				.andExpect(status().isUnauthorized())
+				.andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+				.andExpect(jsonPath("$.status").value(401));
 	}
 
 	@Test
