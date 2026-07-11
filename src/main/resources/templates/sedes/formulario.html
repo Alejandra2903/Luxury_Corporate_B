@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Formulario sede - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<section class="panel">
+		<h1 th:text="${sedeId == null ? 'Registrar sede' : 'Editar sede'}">Sede</h1>
+		<form th:action="${sedeId == null ? '/sedes' : '/sedes/' + sedeId + '/editar'}" th:object="${sedeForm}" method="post">
+			<label for="nombre">Nombre</label>
+			<input id="nombre" th:field="*{nombre}">
+			<div class="error" th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></div>
+			<label for="ciudad">Ciudad</label>
+			<input id="ciudad" th:field="*{ciudad}">
+			<div class="error" th:if="${#fields.hasErrors('ciudad')}" th:errors="*{ciudad}"></div>
+			<label for="direccion">Direccion</label>
+			<input id="direccion" th:field="*{direccion}">
+			<div class="error" th:if="${#fields.hasErrors('direccion')}" th:errors="*{direccion}"></div>
+			<label for="estado">Estado</label>
+			<select id="estado" th:field="*{estado}">
+				<option value="ACTIVO">ACTIVO</option>
+				<option value="INACTIVO">INACTIVO</option>
+			</select>
+			<button type="submit">Guardar</button>
+			<a class="button secondary" th:href="@{/sedes}">Cancelar</a>
+		</form>
+	</section>
+</main>
+</body>
+</html>
+

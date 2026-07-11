@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Detalle consumo - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Detalle de consumo</h1>
+	<div class="panel">
+		<p><strong>Sede:</strong> <span th:text="${consumo.sede}"></span></p>
+		<p><strong>Recurso:</strong> <span th:text="${consumo.tipoRecurso}"></span></p>
+		<p><strong>Cantidad:</strong> <span th:text="${consumo.cantidadConsumida}"></span> <span th:text="${consumo.unidadMedida}"></span></p>
+		<p><strong>Periodo:</strong> <span th:text="${consumo.periodo}"></span></p>
+	</div>
+	<section class="panel">
+		<h2>Costos calculados</h2>
+		<div class="table-container">
+<table>
+			<thead><tr><th>Moneda</th><th>Monto</th><th>Tipo de cambio usado</th></tr></thead>
+			<tbody>
+			<tr th:each="costo : ${consumo.costos}">
+				<td th:text="${costo.moneda}"></td>
+				<td th:text="${costo.monto}"></td>
+				<td th:text="${costo.tipoCambioUsado}"></td>
+			</tr>
+			</tbody>
+		</table>
+</div>
+	</section>
+</main>
+</body>
+</html>
+

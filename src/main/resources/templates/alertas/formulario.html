@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Registrar Alerta - Luxury</title>
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+	<div class="brand">Luxury</div>
+	<nav th:replace="~{fragments/navbar :: nav}"></nav>
+</header>
+<main class="container">
+	<section class="panel">
+		<h1>Registrar Alerta Manual</h1>
+		<form th:action="@{/alertas}" th:object="${alertaForm}" method="post">
+			<div class="grid">
+				<div>
+					<label>Mensaje</label>
+					<input type="text" th:field="*{mensaje}" placeholder="Descripción de la alerta">
+					<div class="message error" th:if="${#fields.hasErrors('mensaje')}" th:errors="*{mensaje}"></div>
+				</div>
+				<div>
+					<label>Nivel de Alerta</label>
+					<select th:field="*{nivel}">
+						<option value="">Seleccione un nivel</option>
+						<option th:each="n : ${niveles}" th:value="${n}" th:text="${n}"></option>
+					</select>
+					<div class="message error" th:if="${#fields.hasErrors('nivel')}" th:errors="*{nivel}"></div>
+				</div>
+			</div>
+			<button type="submit">Guardar alerta</button>
+			<a class="button secondary" th:href="@{/alertas}">Cancelar</a>
+		</form>
+	</section>
+</main>
+</body>
+</html>

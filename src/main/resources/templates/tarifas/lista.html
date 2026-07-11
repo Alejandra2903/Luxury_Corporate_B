@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Tarifas - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Tarifas de recurso</h1>
+	<div class="message" th:if="${successMessage}" th:text="${successMessage}"></div>
+	<section class="panel">
+		<form th:action="@{/tarifas}" th:object="${tarifaForm}" method="post">
+			<div class="grid">
+				<div><label>Sede</label><select th:field="*{sedeId}"><option value="">Seleccione</option><option th:each="sede : ${sedes}" th:value="${sede.id}" th:text="${sede.nombre}"></option></select></div>
+				<div><label>Recurso</label><select th:field="*{tipoRecursoId}"><option value="">Seleccione</option><option th:each="tipo : ${tiposRecurso}" th:value="${tipo.id}" th:text="${tipo.nombre}"></option></select></div>
+				<div><label>Precio unitario PEN</label><input type="number" step="0.0001" th:field="*{precioUnitarioPen}"></div>
+				<div><label>Fecha inicio</label><input type="date" th:field="*{fechaInicio}" th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"></div>
+				<div><label>Fecha fin</label><input type="date" th:field="*{fechaFin}" th:attr="min=${#dates.format(#dates.createNow(), 'yyyy-MM-dd')}"></div>
+			</div>
+			<button type="submit">Registrar</button>
+		</form>
+	</section>
+	<div class="table-container">
+<table>
+		<thead><tr><th>ID</th><th>Sede</th><th>Recurso</th><th>Precio PEN</th><th>Inicio</th><th>Fin</th><th>Estado</th></tr></thead>
+		<tbody>
+		<tr th:each="tarifa : ${tarifas}">
+			<td th:text="${tarifa.id}"></td>
+			<td th:text="${tarifa.sede}"></td>
+			<td th:text="${tarifa.tipoRecurso}"></td>
+			<td th:text="${tarifa.precioUnitarioPen}"></td>
+			<td th:text="${tarifa.fechaInicio}"></td>
+			<td th:text="${tarifa.fechaFin}"></td>
+			<td th:text="${tarifa.estado}"></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</main>
+</body>
+</html>
+

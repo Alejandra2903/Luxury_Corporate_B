@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Detalle usuario - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<section class="panel">
+		<h1 th:text="${usuario.nombreCompleto}">Usuario</h1>
+		<p><strong>Tipo documento:</strong> <span th:text="${usuario.tipoDocumento}"></span></p>
+		<p><strong>Numero documento:</strong> <span th:text="${usuario.numeroDocumento}"></span></p>
+		<p><strong>Telefono:</strong> <span th:text="${usuario.telefono}"></span></p>
+		<p><strong>Email:</strong> <span th:text="${usuario.correo}"></span></p>
+		<p><strong>Estado:</strong> <span th:text="${usuario.estado}"></span></p>
+		<p><strong>Roles:</strong> <span th:text="${usuario.roles}"></span></p>
+		<p><strong>Creado:</strong> <span th:text="${usuario.fechaRegistro}"></span></p>
+		<a class="button" th:href="@{/usuarios/{id}/editar(id=${usuario.id})}">Editar</a>
+		<a class="button secondary" th:href="@{/usuarios}">Volver</a>
+	</section>
+</main>
+</body>
+</html>
+

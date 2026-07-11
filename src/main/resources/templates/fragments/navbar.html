@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+	<nav class="nav" th:fragment="nav">
+		<button type="button" class="menu-toggle" onclick="document.querySelector('.nav-links').classList.toggle('active')">Menu</button>
+		<div class="nav-links">
+			<a th:href="@{/dashboard}">Dashboard</a>
+			<a th:href="@{/sedes}">Sedes</a>
+			<a th:href="@{/consumos}">Consumos</a>
+			<a th:href="@{/alertas}">Alertas</a>
+			<a th:href="@{/reportes/mensual}">Reportes</a>
+			<a th:href="@{/tarifas}">Tarifas</a>
+			<a th:href="@{/umbrales}">Umbrales</a>
+			<a th:href="@{/monedas}">Monedas</a>
+			<a th:href="@{/tipos-cambio}">Tipos de cambio</a>
+			<a th:href="@{/auditorias}">Auditorias</a>
+			<a th:href="@{/eventos-acceso}">Eventos de acceso</a>
+			<a th:href="@{/usuarios}">Gestion de usuarios</a>
+			<form class="inline" th:action="@{/logout}" method="post"><button type="submit">Salir</button></form>
+		</div>
+	</nav>
+</body>
+</html>

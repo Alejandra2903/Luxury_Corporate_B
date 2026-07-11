@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Sedes - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Sedes</h1>
+	<div class="message" th:if="${successMessage}" th:text="${successMessage}"></div>
+	<div class="message danger" style="background-color: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 4px; margin-bottom: 20px;" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+	<div class="actions">
+		<a class="button" th:href="@{/sedes/registrar}">Registrar sede</a>
+		<button class="button secondary" onclick="document.getElementById('recursosModal').showModal()">Gestionar Recursos</button>
+	</div>
+	<div class="table-container">
+<table>
+		<thead><tr><th>ID</th><th>Nombre</th><th>Ciudad</th><th>Direccion</th><th>Estado</th><th>Acciones</th></tr></thead>
+		<tbody>
+		<tr th:each="sede : ${sedes}">
+			<td th:text="${sede.id}"></td>
+			<td th:text="${sede.nombre}"></td>
+			<td th:text="${sede.ciudad}"></td>
+			<td th:text="${sede.direccion}"></td>
+			<td th:text="${sede.estado}"></td>
+			<td>
+				<a th:href="@{/sedes/{id}/editar(id=${sede.id})}">Editar</a>
+				<form class="inline" th:action="@{/sedes/{id}/eliminar(id=${sede.id})}" method="post"><button class="danger" type="submit">Desactivar</button></form>
+			</td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+
+	<dialog id="recursosModal" class="panel" style="width: 500px; padding: 20px; border: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+		<h2>Gestión de Recursos</h2>
+		<div class="table-container">
+<table style="margin-bottom: 20px;">
+			<thead><tr><th>Recurso</th><th>Unidad</th><th>Acciones</th></tr></thead>
+			<tbody>
+				<tr th:each="tipo : ${tiposRecurso}">
+					<td th:text="${tipo.nombre}"></td>
+					<td th:text="${tipo.unidadMedida}"></td>
+					<td>
+						<form class="inline" th:action="@{/tipos-recurso/{id}/eliminar(id=${tipo.id})}" method="post">
+							<button class="danger" style="padding: 4px 8px; font-size: 12px;" type="submit">Eliminar</button>
+						</form>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+</div>
+		
+		<h3>Añadir Nuevo Recurso</h3>
+		<form th:action="@{/tipos-recurso}" th:object="${tipoRecursoForm}" method="post">
+			<div class="grid">
+				<div><label>Nombre</label><input type="text" th:field="*{nombre}" required></div>
+				<div><label>Unidad</label><input type="text" th:field="*{unidadMedida}" required></div>
+			</div>
+			<div style="margin-top: 15px; text-align: right;">
+				<button type="button" class="button secondary" onclick="document.getElementById('recursosModal').close()">Cerrar</button>
+				<button type="submit">Guardar</button>
+			</div>
+		</form>
+	</dialog>
+</main>
+</body>
+</html>
+

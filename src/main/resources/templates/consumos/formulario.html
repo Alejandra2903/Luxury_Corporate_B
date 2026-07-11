@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Registrar consumo - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<section class="panel">
+		<h1>Registrar consumo</h1>
+		<div class="message danger" style="background-color: #fee2e2; color: #b91c1c; padding: 10px; border-radius: 4px; margin-bottom: 20px;" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+		<form th:action="@{/consumos/registrar}" th:object="${consumoForm}" method="post">
+			<div class="grid">
+				<div>
+					<label>Sede</label>
+					<select th:field="*{sedeId}">
+						<option value="">Seleccione</option>
+						<option th:each="sede : ${sedes}" th:value="${sede.id}" th:text="${sede.nombre}"></option>
+					</select>
+					<div class="error" th:if="${#fields.hasErrors('sedeId')}" th:errors="*{sedeId}"></div>
+				</div>
+				<div>
+					<label>Recurso</label>
+					<select th:field="*{tipoRecursoId}">
+						<option value="">Seleccione</option>
+						<option th:each="tipo : ${tiposRecurso}" th:value="${tipo.id}" th:text="${tipo.nombre}"></option>
+					</select>
+					<div class="error" th:if="${#fields.hasErrors('tipoRecursoId')}" th:errors="*{tipoRecursoId}"></div>
+				</div>
+				<div>
+					<label>Cantidad consumida</label>
+					<input type="number" step="0.0001" th:field="*{cantidadConsumida}">
+					<div class="error" th:if="${#fields.hasErrors('cantidadConsumida')}" th:errors="*{cantidadConsumida}"></div>
+				</div>
+				<div>
+					<label>Fecha consumo</label>
+					<input type="date" th:field="*{fechaConsumo}" th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
+					<div class="error" th:if="${#fields.hasErrors('fechaConsumo')}" th:errors="*{fechaConsumo}"></div>
+				</div>
+				<div>
+					<label>Periodo</label>
+					<input placeholder="2026-05" th:field="*{periodo}">
+					<div class="error" th:if="${#fields.hasErrors('periodo')}" th:errors="*{periodo}"></div>
+				</div>
+			</div>
+			<button type="submit">Guardar consumo</button>
+			<a class="button secondary" th:href="@{/consumos}">Cancelar</a>
+		</form>
+	</section>
+</main>
+</body>
+</html>
+

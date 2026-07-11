@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Monedas - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Monedas</h1>
+	<div class="message" th:if="${successMessage}" th:text="${successMessage}"></div>
+	<section class="panel">
+		<form th:action="@{/monedas}" th:object="${monedaForm}" method="post">
+			<label for="codigo">Codigo</label>
+			<input id="codigo" th:field="*{codigo}">
+			<label for="nombre">Nombre</label>
+			<input id="nombre" th:field="*{nombre}">
+			<button type="submit">Registrar</button>
+		</form>
+	</section>
+	<div class="table-container">
+<table>
+		<thead><tr><th>ID</th><th>Codigo</th><th>Nombre</th></tr></thead>
+		<tbody><tr th:each="moneda : ${monedas}"><td th:text="${moneda.id}"></td><td th:text="${moneda.codigo}"></td><td th:text="${moneda.nombre}"></td></tr></tbody>
+	</table>
+</div>
+</main>
+</body>
+</html>
+

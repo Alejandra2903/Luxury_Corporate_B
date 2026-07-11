@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Acceso Denegado - Luxury</title>
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+	<div class="brand">Luxury</div>
+	<nav th:replace="~{fragments/navbar :: nav}"></nav>
+</header>
+<main class="container">
+	<section class="panel" style="text-align: center; padding: 50px;">
+		<h1 style="color: #b91c1c; font-size: 3rem; margin-bottom: 20px;">403 - Acceso Denegado</h1>
+		<p style="font-size: 1.2rem; color: #4b5563; margin-bottom: 30px;">
+			No tienes los permisos suficientes para acceder a esta página.
+		</p>
+		<p>
+			Esta sección es exclusiva para usuarios con rol de <strong>ADMINISTRADOR</strong> o <strong>AUDITOR</strong>.
+		</p>
+		<br>
+		<a class="button" th:href="@{/dashboard}">Volver al Inicio</a>
+	</section>
+</main>
+</body>
+</html>

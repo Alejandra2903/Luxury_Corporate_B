@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Tipos de cambio - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Tipos de cambio</h1>
+	<div class="message" th:if="${successMessage}" th:text="${successMessage}"></div>
+	<section class="panel">
+		<form th:action="@{/tipos-cambio}" th:object="${tipoCambioForm}" method="post">
+			<div class="grid">
+				<div><label>Origen</label><input th:field="*{monedaOrigen}"></div>
+				<div><label>Destino</label><input th:field="*{monedaDestino}"></div>
+				<div><label>Valor</label><input type="number" step="0.000001" th:field="*{valor}"></div>
+				<div><label>Fecha</label><input type="date" th:field="*{fecha}"></div>
+			</div>
+			<button type="submit">Registrar</button>
+		</form>
+	</section>
+	<div class="table-container">
+<table>
+		<thead><tr><th>ID</th><th>Origen</th><th>Destino</th><th>Valor</th><th>Fecha</th><th>Estado</th></tr></thead>
+		<tbody>
+		<tr th:each="tc : ${tiposCambio}">
+			<td th:text="${tc.id}"></td>
+			<td th:text="${tc.monedaOrigen}"></td>
+			<td th:text="${tc.monedaDestino}"></td>
+			<td th:text="${tc.valor}"></td>
+			<td th:text="${tc.fecha}"></td>
+			<td th:text="${tc.estado}"></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</main>
+</body>
+</html>
+

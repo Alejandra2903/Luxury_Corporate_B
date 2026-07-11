@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Eventos de acceso - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Eventos de acceso</h1>
+	<div class="table-container">
+<table>
+		<thead><tr><th>ID</th><th>Usuario ID</th><th>Email intentado</th><th>Tipo</th><th>Descripcion</th><th>Fecha</th></tr></thead>
+		<tbody>
+		<tr th:each="evento : ${eventos}">
+			<td th:text="${evento.id}"></td>
+			<td th:text="${evento.usuarioId}"></td>
+			<td th:text="${evento.emailIntentado}"></td>
+			<td th:text="${evento.tipoEvento}"></td>
+			<td th:text="${evento.descripcion}"></td>
+			<td th:text="${evento.fecha}"></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</main>
+</body>
+</html>
+

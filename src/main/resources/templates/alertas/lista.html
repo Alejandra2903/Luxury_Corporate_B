@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Alertas - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Alertas</h1>
+	<div class="message" th:if="${successMessage}" th:text="${successMessage}"></div>
+	<div class="actions">
+		<a class="button" th:href="@{/alertas/registrar}">Registrar alerta manual</a>
+	</div>
+	<div class="table-container">
+<table>
+		<thead><tr><th>ID</th><th>Sede</th><th>Recurso</th><th>Tipo</th><th>Nivel</th><th>Estado</th><th>Mensaje</th><th>Acciones</th></tr></thead>
+		<tbody>
+		<tr th:each="alerta : ${alertas}">
+			<td th:text="${alerta.id}"></td>
+			<td th:text="${alerta.sede}"></td>
+			<td th:text="${alerta.tipoRecurso}"></td>
+			<td th:text="${alerta.tipoAlerta}"></td>
+			<td th:text="${alerta.nivel}"></td>
+			<td th:text="${alerta.estado}"></td>
+			<td th:text="${alerta.mensaje}"></td>
+			<td><form class="inline" th:action="@{/alertas/{id}/atender(id=${alerta.id})}" method="post"><button type="submit">Atender</button></form></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</main>
+</body>
+</html>
+

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+	<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Dashboard - Luxury</title>
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<header class="topbar">
+	<div class="brand">Luxury</div>
+	<nav th:replace="~{fragments/navbar :: nav}"></nav>
+</header>
+<main class="container">
+	<h1>Dashboard</h1>
+	<div class="grid">
+		<div class="metric"><span>Sedes</span><strong th:text="${resumen.totalSedes}">0</strong></div>
+		<div class="metric"><span>Consumos</span><strong th:text="${resumen.totalConsumos}">0</strong></div>
+		<div class="metric"><span>Alertas</span><strong th:text="${resumen.totalAlertas}">0</strong></div>
+		<div class="metric" sec:authorize="hasAuthority('REPORTE_VER')"><span>Costo PEN</span><strong th:text="${resumen.costoTotalPen}">0</strong></div>
+	</div>
+	
+	<div class="grid dashboard-tables">
+		<section class="panel">
+			<h2>Consumo por sede</h2>
+			<div class="table-container">
+<table>
+				<thead><tr><th>Sede</th><th>Total consumido</th></tr></thead>
+				<tbody>
+				<tr th:each="item : ${consumosPorSede}">
+					<td th:text="${item.sede}"></td>
+					<td th:text="${item.totalConsumido}"></td>
+				</tr>
+				</tbody>
+			</table>
+</div>
+		</section>
+		<section class="panel" sec:authorize="hasAuthority('REPORTE_VER')">
+			<h2>Costos por mes</h2>
+			<div class="table-container">
+<table>
+				<thead><tr><th>Periodo</th><th>Moneda</th><th>Total</th></tr></thead>
+				<tbody>
+				<tr th:each="item : ${costosPorMes}">
+					<td th:text="${item.periodo}"></td>
+					<td th:text="${item.moneda}"></td>
+					<td th:text="${item.total}"></td>
+				</tr>
+				</tbody>
+			</table>
+</div>
+		</section>
+	</div>
+</main>
+</body>
+</html>
+

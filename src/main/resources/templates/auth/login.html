@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Login - Luxury</title>
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<main class="auth panel">
+	<h1>Luxury</h1>
+	<p>Ingreso al sistema</p>
+	<div class="message" th:if="${successMessage}" th:text="${successMessage}"></div>
+	<div class="error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+	<div class="error" th:if="${param.error}">Credenciales invalidas.</div>
+	<div class="message" th:if="${param.logout}">Sesion cerrada correctamente.</div>
+	<form th:action="@{/auth/login}" method="post">
+		<label for="identificador">Email</label>
+		<input id="identificador" name="identificador" type="email" required>
+		<label for="contrasena">Password</label>
+		<input id="contrasena" name="contrasena" type="password" required>
+		<button type="submit">Ingresar</button>
+		<a class="button secondary" th:href="@{/auth/registro}">Registrar usuario</a>
+	</form>
+</main>
+</body>
+</html>

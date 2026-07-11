@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Reportes - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Reporte mensual</h1>
+	<div class="message error" th:if="${errorForm}" th:text="${errorForm}" style="background: #fef0f0; border: 1px solid #fecdd3;"></div>
+	<section class="panel">
+		<form th:action="@{/reportes/mensual}" method="get">
+			<label for="periodo">Periodo</label>
+			<input id="periodo" name="periodo" type="month" th:value="${periodo}" required>
+			<button type="submit">Consultar</button>
+		</form>
+	</section>
+	<div class="table-container">
+<table th:if="${reportes != null}">
+		<thead><tr><th>Periodo</th><th>Sede</th><th>Recurso</th><th>Total consumido</th><th>PEN</th><th>USD</th><th>EUR</th></tr></thead>
+		<tbody>
+		<tr th:each="reporte : ${reportes}">
+			<td th:text="${reporte.periodo}"></td>
+			<td th:text="${reporte.sede}"></td>
+			<td th:text="${reporte.tipoRecurso}"></td>
+			<td th:text="${reporte.totalConsumido}"></td>
+			<td th:text="${reporte.costoPen}"></td>
+			<td th:text="${reporte.costoUsd}"></td>
+			<td th:text="${reporte.costoEur}"></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</main>
+</body>
+</html>
+

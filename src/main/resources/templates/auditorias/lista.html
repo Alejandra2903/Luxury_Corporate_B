@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Auditorias - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<h1>Auditorias</h1>
+	<div class="table-container">
+<table>
+		<thead><tr><th>ID</th><th>Usuario</th><th>Modulo</th><th>Accion</th><th>Tabla</th><th>Registro</th><th>Descripcion</th><th>Fecha</th></tr></thead>
+		<tbody>
+		<tr th:each="auditoria : ${auditorias}">
+			<td th:text="${auditoria.id}"></td>
+			<td th:text="${auditoria.usuario}"></td>
+			<td th:text="${auditoria.modulo}"></td>
+			<td th:text="${auditoria.accion}"></td>
+			<td th:text="${auditoria.tablaAfectada}"></td>
+			<td th:text="${auditoria.idRegistroAfectado}"></td>
+			<td th:text="${auditoria.descripcion}"></td>
+			<td th:text="${auditoria.fecha}"></td>
+		</tr>
+		</tbody>
+	</table>
+</div>
+</main>
+</body>
+</html>
+

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Formulario usuario - Luxury</title><link rel="stylesheet" th:href="@{/css/app.css}"></head>
+<body>
+<header class="topbar"><div class="brand">Luxury</div><nav th:replace="~{fragments/navbar :: nav}"></nav></header>
+<main class="container">
+	<section class="panel">
+		<h1 th:text="${usuarioId == null ? 'Registrar usuario' : 'Editar usuario'}">Usuario</h1>
+		<div class="error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+		<form th:action="${usuarioId == null ? '/usuarios' : '/usuarios/' + usuarioId + '/editar'}" th:object="${usuarioForm}" method="post" autocomplete="off">
+			<label for="nombres">Nombres</label>
+			<input id="nombres" th:field="*{nombres}" autocomplete="off" required>
+			<div class="error" th:if="${#fields.hasErrors('nombres')}" th:errors="*{nombres}"></div>
+			<label for="apellidos">Apellidos</label>
+			<input id="apellidos" th:field="*{apellidos}" autocomplete="off" required>
+			<div class="error" th:if="${#fields.hasErrors('apellidos')}" th:errors="*{apellidos}"></div>
+			<label for="tipoDocumento">Tipo de documento</label>
+			<select id="tipoDocumento" th:field="*{tipoDocumento}" required>
+				<option value="">-- Seleccione --</option>
+				<option th:each="tipo : ${tiposDocumento}" th:value="${tipo}" th:text="${tipo}"></option>
+			</select>
+			<div class="error" th:if="${#fields.hasErrors('tipoDocumento')}" th:errors="*{tipoDocumento}"></div>
+			<label for="numeroDocumento">Numero de documento</label>
+			<input id="numeroDocumento" th:field="*{numeroDocumento}" autocomplete="off" required>
+			<div class="error" th:if="${#fields.hasErrors('numeroDocumento')}" th:errors="*{numeroDocumento}"></div>
+			<label for="telefono">Telefono</label>
+			<input id="telefono" th:field="*{telefono}" autocomplete="off" required>
+			<div class="error" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
+			<label for="correo">Email</label>
+			<input id="correo" type="email" th:field="*{correo}" autocomplete="off" required>
+			<div class="error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></div>
+			<label for="contrasena" th:text="${usuarioId == null ? 'Password' : 'Password (dejar vacio para no cambiar)'}">Password</label>
+			<input id="contrasena" type="password" th:field="*{contrasena}" autocomplete="new-password" th:required="${usuarioId == null}">
+			<div class="error" th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}"></div>
+			<label for="rol">Rol</label>
+			<select id="rol" th:field="*{rol}" required>
+				<option value="">-- Seleccione --</option>
+				<option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+			</select>
+			<div class="error" th:if="${#fields.hasErrors('rol')}" th:errors="*{rol}"></div>
+			<label for="estado">Estado</label>
+			<select id="estado" th:field="*{activo}">
+				<option value="true">ACTIVO</option>
+				<option value="false">INACTIVO</option>
+			</select>
+			<button type="submit">Guardar</button>
+			<a class="button secondary" th:href="@{/usuarios}">Cancelar</a>
+		</form>
+	</section>
+</main>
+</body>
+</html>
+

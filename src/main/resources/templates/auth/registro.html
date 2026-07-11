@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Registro - Luxury</title>
+	<link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<main class="auth panel">
+	<h1>Registrar usuario</h1>
+	<div class="error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+	<form th:action="@{/auth/registro}" th:object="${registroRequest}" method="post">
+		<label for="nombres">Nombres</label>
+		<input id="nombres" th:field="*{nombres}" required>
+		<div class="error" th:if="${#fields.hasErrors('nombres')}" th:errors="*{nombres}"></div>
+		<label for="apellidos">Apellidos</label>
+		<input id="apellidos" th:field="*{apellidos}" required>
+		<div class="error" th:if="${#fields.hasErrors('apellidos')}" th:errors="*{apellidos}"></div>
+		<label for="tipoDocumento">Tipo de documento</label>
+		<select id="tipoDocumento" th:field="*{tipoDocumento}" required>
+			<option value="">-- Seleccione --</option>
+			<option th:each="tipo : ${T(com.example.luxury.dominios.seguridad.enums.TipoDocumento).values()}"
+					th:value="${tipo}" th:text="${tipo}"></option>
+		</select>
+		<div class="error" th:if="${#fields.hasErrors('tipoDocumento')}" th:errors="*{tipoDocumento}"></div>
+		<label for="numeroDocumento">Numero de documento</label>
+		<input id="numeroDocumento" th:field="*{numeroDocumento}" required>
+		<div class="error" th:if="${#fields.hasErrors('numeroDocumento')}" th:errors="*{numeroDocumento}"></div>
+		<label for="telefono">Telefono</label>
+		<input id="telefono" th:field="*{telefono}" required>
+		<div class="error" th:if="${#fields.hasErrors('telefono')}" th:errors="*{telefono}"></div>
+		<label for="correo">Correo electronico</label>
+		<input id="correo" type="email" th:field="*{correo}" required>
+		<div class="error" th:if="${#fields.hasErrors('correo')}" th:errors="*{correo}"></div>
+		<label for="contrasena">Password</label>
+		<input id="contrasena" type="password" th:field="*{contrasena}" required>
+		<div class="error" th:if="${#fields.hasErrors('contrasena')}" th:errors="*{contrasena}"></div>
+
+
+		<button type="submit">Registrar</button>
+		<a class="button secondary" th:href="@{/auth/login}">Volver</a>
+	</form>
+</main>
+</body>
+</html>
