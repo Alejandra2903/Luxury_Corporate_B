@@ -62,28 +62,121 @@ public class ApiReportsController {
 
     @GetMapping("/mensual/pdf")
     public ResponseEntity<byte[]> reporteMensualPdf(@RequestParam String periodo) {
-        byte[] pdf = crearPdfBasico(periodo);
+        List<ReporteMensualResponse> rows = reporteService.mensual(periodo);
+        long alertas = alertasService.listar().size();
+        byte[] pdf = crearPdfBasico(periodo, rows, alertas);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_PDF);
         headers.setContentDisposition(ContentDisposition.attachment().filename("luxury-reporte-" + periodo + ".pdf").build());
         return ResponseEntity.ok().headers(headers).body(pdf);
     }
 
-    private byte[] crearPdfBasico(String periodo) {
-        String stream = """
-                BT
-                /F2 24 Tf 56 770 Td (LUXURY CORPORATE) Tj
-                /F1 13 Tf 0 -32 Td (Reporte mensual de consumo y control operativo) Tj
-                0 -28 Td (Periodo: %s) Tj
-                0 -36 Td (Resumen ejecutivo) Tj
-                0 -22 Td (Este documento consolida sedes, consumos, costos y alertas del sistema.) Tj
-                0 -28 Td (Indicadores principales:) Tj
-                18 -22 Td (- Costo total calculado desde registros del backend.) Tj
-                0 -20 Td (- Alertas generadas por reglas de umbral.) Tj
-                0 -20 Td (- Datos listos para consumo desde Angular.) Tj
-                -18 -36 Td (Documento generado automaticamente por Luxury Corporate Backend.) Tj
-                ET
-                """.formatted(escapePdf(periodo));
+    private byte[] crearPdfBasico(String periodo, List<ReporteMensualResponse> rows, long alertas) {
+        java.math.BigDecimal costoTotal = rows.stream()
+                .map(ReporteMensualResponse::getCostoPen)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal consumoTotal = rows.stream()
+                .map(ReporteMensualResponse::getTotalConsumido)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        long sedesEvaluadas = rows.stream().map(ReporteMensualResponse::getSede).distinct().count();
+        String fechaGeneracion = java.time.LocalDateTime.now()
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+
+        // Layout A4: 595 x 842. Header: 790, tabla desde 640 hacia abajo.
+        StringBuilder cuerpo = new StringBuilder();
+
+        // Barra superior negra (rectangulo relleno).
+        cuerpo.append("0.05 0.10 0.20 rg\n"); // color casi negro azulado
+        cuerpo.append("0 795 595 47 re f\n");
+        cuerpo.append("1 1 1 rg\n"); // texto blanco
+
+        cuerpo.append("BT\n");
+        cuerpo.append("/F2 22 Tf 40 820 Td (LUXURY CORPORATE) Tj\n");
+        cuerpo.append("/F1 11 Tf 0 -18 Td (Reporte mensual de consumo y control operativo) Tj\n");
+        cuerpo.append("ET\n");
+
+        // Volver a color negro.
+        cuerpo.append("0 0 0 rg\n");
+
+        // Metadata bajo el header
+        cuerpo.append("BT\n");
+        cuerpo.append("/F2 12 Tf 40 770 Td (Periodo: ").append(escapePdf(periodo)).append(") Tj\n");
+        cuerpo.append("/F1 10 Tf 300 0 Td (Generado: ").append(escapePdf(fechaGeneracion)).append(") Tj\n");
+        cuerpo.append("ET\n");
+
+        // KPIs en cajas
+        cuerpo.append("0.95 0.95 0.98 rg\n");
+        cuerpo.append("40 720 165 40 re f\n");
+        cuerpo.append("215 720 165 40 re f\n");
+        cuerpo.append("390 720 165 40 re f\n");
+        cuerpo.append("0 0 0 rg\n");
+        cuerpo.append("BT /F1 9 Tf 50 748 Td (COSTO TOTAL PEN) Tj ET\n");
+        cuerpo.append("BT /F2 14 Tf 50 730 Td (S/. ").append(escapePdf(costoTotal.toPlainString())).append(") Tj ET\n");
+        cuerpo.append("BT /F1 9 Tf 225 748 Td (SEDES EVALUADAS) Tj ET\n");
+        cuerpo.append("BT /F2 14 Tf 225 730 Td (").append(sedesEvaluadas).append(") Tj ET\n");
+        cuerpo.append("BT /F1 9 Tf 400 748 Td (ALERTAS ACTIVAS) Tj ET\n");
+        cuerpo.append("BT /F2 14 Tf 400 730 Td (").append(alertas).append(") Tj ET\n");
+
+        // Titulo tabla
+        cuerpo.append("BT /F2 12 Tf 40 695 Td (Detalle por sede y recurso) Tj ET\n");
+
+        // Header tabla (fila gris)
+        float tableTop = 680;
+        float rowH = 20;
+        cuerpo.append("0.90 0.90 0.93 rg\n");
+        cuerpo.append("40 ").append(tableTop - rowH).append(" 515 ").append(rowH).append(" re f\n");
+        cuerpo.append("0 0 0 rg\n");
+        cuerpo.append("BT /F2 10 Tf 48 ").append(tableTop - 14).append(" Td (SEDE) Tj ET\n");
+        cuerpo.append("BT /F2 10 Tf 200 ").append(tableTop - 14).append(" Td (RECURSO) Tj ET\n");
+        cuerpo.append("BT /F2 10 Tf 330 ").append(tableTop - 14).append(" Td (CONSUMO) Tj ET\n");
+        cuerpo.append("BT /F2 10 Tf 450 ").append(tableTop - 14).append(" Td (COSTO PEN) Tj ET\n");
+
+        // Filas
+        float y = tableTop - rowH;
+        if (rows.isEmpty()) {
+            y -= rowH;
+            cuerpo.append("BT /F1 10 Tf 48 ").append(y + 6).append(" Td (Sin registros de consumo para el periodo indicado.) Tj ET\n");
+        } else {
+            for (ReporteMensualResponse row : rows) {
+                y -= rowH;
+                cuerpo.append("BT /F1 10 Tf 48 ").append(y + 6).append(" Td (")
+                        .append(escapePdf(recortar(row.getSede(), 25))).append(") Tj ET\n");
+                cuerpo.append("BT /F1 10 Tf 200 ").append(y + 6).append(" Td (")
+                        .append(escapePdf(recortar(row.getTipoRecurso(), 20))).append(") Tj ET\n");
+                cuerpo.append("BT /F1 10 Tf 330 ").append(y + 6).append(" Td (")
+                        .append(escapePdf(row.getTotalConsumido().toPlainString())).append(") Tj ET\n");
+                cuerpo.append("BT /F1 10 Tf 450 ").append(y + 6).append(" Td (")
+                        .append(escapePdf(row.getCostoPen().toPlainString())).append(") Tj ET\n");
+                // Linea inferior de fila
+                cuerpo.append("0.85 0.85 0.85 RG\n");
+                cuerpo.append("40 ").append(y).append(" m 555 ").append(y).append(" l S\n");
+                cuerpo.append("0 0 0 RG\n");
+            }
+        }
+
+        // Fila total
+        y -= rowH;
+        cuerpo.append("0.05 0.10 0.20 rg\n");
+        cuerpo.append("40 ").append(y).append(" 515 ").append(rowH).append(" re f\n");
+        cuerpo.append("1 1 1 rg\n");
+        cuerpo.append("BT /F2 10 Tf 48 ").append(y + 6).append(" Td (TOTAL) Tj ET\n");
+        cuerpo.append("BT /F2 10 Tf 330 ").append(y + 6).append(" Td (")
+                .append(escapePdf(consumoTotal.toPlainString())).append(") Tj ET\n");
+        cuerpo.append("BT /F2 10 Tf 450 ").append(y + 6).append(" Td (")
+                .append(escapePdf(costoTotal.toPlainString())).append(") Tj ET\n");
+        cuerpo.append("0 0 0 rg\n");
+
+        // Pie / sello
+        cuerpo.append("0.85 0.85 0.85 RG\n");
+        cuerpo.append("40 90 m 555 90 l S\n");
+        cuerpo.append("0 0 0 RG\n");
+        cuerpo.append("BT /F2 9 Tf 40 70 Td (LUXURY CORPORATE - Documento oficial) Tj ET\n");
+        cuerpo.append("BT /F1 8 Tf 40 55 Td (Este documento fue generado automaticamente por el sistema. ");
+        cuerpo.append("Uso interno.) Tj ET\n");
+        cuerpo.append("BT /F1 8 Tf 40 42 Td (Reporte: ").append(escapePdf(periodo));
+        cuerpo.append("  |  Emitido: ").append(escapePdf(fechaGeneracion)).append(") Tj ET\n");
+
+        String stream = cuerpo.toString();
 
         List<String> objetos = List.of(
                 "<< /Type /Catalog /Pages 2 0 R >>",
@@ -120,5 +213,12 @@ public class ApiReportsController {
 
     private String escapePdf(String value) {
         return value.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)");
+    }
+
+    private String recortar(String value, int max) {
+        if (value == null) {
+            return "";
+        }
+        return value.length() <= max ? value : value.substring(0, max);
     }
 }

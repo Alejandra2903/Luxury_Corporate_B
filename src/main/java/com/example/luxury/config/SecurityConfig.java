@@ -37,8 +37,30 @@ public class SecurityConfig {
 				.cors(cors -> cors.configurationSource(corsConfigurationSource()))
 				.sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
 				.authorizeHttpRequests(auth -> auth
+						// Publico
 						.requestMatchers("/api/auth/**").permitAll()
+						.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+
+						// API REST por rol
+						.requestMatchers("/api/usuarios/**").hasRole("ADMIN")
+						.requestMatchers("/api/dashboard/**").hasAnyRole("ADMIN", "GERENTE", "AUDITOR", "ANALISTA")
+						.requestMatchers("/api/sedes/**", "/api/tipos-recurso/**")
+							.hasAnyRole("ADMIN", "GERENTE", "OPERADOR", "ANALISTA")
+						.requestMatchers("/api/consumos/**")
+							.hasAnyRole("ADMIN", "GERENTE", "OPERADOR", "ANALISTA")
+						.requestMatchers("/api/tarifas/**", "/api/umbrales/**", "/api/alertas/**")
+							.hasAnyRole("ADMIN", "GERENTE")
+						.requestMatchers("/api/monedas/**", "/api/tipos-cambio/**")
+							.hasAnyRole("ADMIN", "GERENTE")
+						.requestMatchers("/api/auditorias/**", "/api/eventos-acceso/**")
+							.hasAnyRole("ADMIN", "AUDITOR")
+						.requestMatchers("/api/reportes/**")
+							.hasAnyRole("ADMIN", "GERENTE", "AUDITOR", "ANALISTA")
+						.requestMatchers("/api/sessions/events").authenticated()
+						.requestMatchers("/api/session-monitoring/**").hasRole("ADMIN")
 						.requestMatchers("/api/**").authenticated()
+
+						// Vistas MVC Thymeleaf
 						.requestMatchers("/auth/**", "/css/**", "/error", "/login", "/registro").permitAll()
 						.requestMatchers("/usuarios/**").hasRole("ADMIN")
 						.requestMatchers("/auditorias/**", "/eventos-acceso/**").hasAnyRole("ADMIN", "AUDITOR")
@@ -53,6 +75,15 @@ public class SecurityConfig {
 								response.getWriter().write("{\"status\":401,\"error\":\"UNAUTHORIZED\",\"message\":\"Token requerido o invalido\"}");
 							} else {
 								response.sendRedirect("/auth/login");
+							}
+						})
+						.accessDeniedHandler((request, response, deniedException) -> {
+							if (request.getRequestURI().startsWith("/api/")) {
+								response.setStatus(HttpStatus.FORBIDDEN.value());
+								response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+								response.getWriter().write("{\"status\":403,\"error\":\"FORBIDDEN\",\"message\":\"No tienes permiso para acceder a este recurso.\"}");
+							} else {
+								response.sendRedirect("/error");
 							}
 						}))
 				.addFilterBefore(filtroJwt, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
