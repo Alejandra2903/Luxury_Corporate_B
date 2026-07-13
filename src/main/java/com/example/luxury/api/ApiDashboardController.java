@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.luxury.dominios.dashboard.dto.CostoPorMesResponse;
+import com.example.luxury.api.dto.DashboardResumenApiResponse;
 import com.example.luxury.dominios.dashboard.service.DashboardService;
 
 @RestController
@@ -24,51 +24,53 @@ public class ApiDashboardController {
     }
 
     @GetMapping("/resumen")
-    public Map<String, Object> resumen() {
+    public DashboardResumenApiResponse resumen() {
         var resumen = dashboardService.resumenGeneral();
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("periodo", "2026-06");
-        data.put("monedaBase", "PEN");
-        data.put("costoTotal", resumen.getCostoTotalPen());
-        data.put("variacionCostoPorcentaje", -7.8);
-        data.put("consumoEnergiaKwh", 312840);
-        data.put("consumoAguaM3", 4820);
-        data.put("sedesActivas", resumen.getTotalSedes());
-        data.put("alertasActivas", resumen.getTotalAlertas());
-        data.put("cumplimientoUmbralesPorcentaje", 91.4);
-        data.put("ultimaActualizacion", LocalDateTime.now());
-        return data;
+        String periodo = dashboardService.periodoMasReciente();
+        BigDecimal energiaKwh = dashboardService.consumoKwhPorPeriodo("Luz", periodo);
+        BigDecimal aguaM3 = dashboardService.consumoKwhPorPeriodo("Agua", periodo);
+        BigDecimal variacion = dashboardService.variacionCostoPorcentaje(periodo);
+
+        return new DashboardResumenApiResponse(
+                periodo,
+                "PEN",
+                resumen.getCostoTotalPen(),
+                variacion,
+                energiaKwh,
+                aguaM3,
+                resumen.getTotalSedes(),
+                resumen.getTotalAlertas(),
+                dashboardService.cumplimientoUmbralesPorcentaje(),
+                LocalDateTime.now());
     }
 
     @GetMapping("/consumo-por-sede")
     public List<Map<String, Object>> consumoPorSede() {
+        var costosPorSede = dashboardService.costoPenPorSede();
+        var alertasPorSede = dashboardService.alertasPorSede();
         return dashboardService.consumoPorSede().stream().map(item -> {
+            BigDecimal costoTotal = costosPorSede.getOrDefault(item.getSedeId(), BigDecimal.ZERO);
             Map<String, Object> data = new LinkedHashMap<>();
-            data.put("sedeId", 0L);
+            data.put("sedeId", item.getSedeId());
             data.put("sede", item.getSede());
-            data.put("energiaKwh", item.getTotalConsumido());
-            data.put("aguaM3", BigDecimal.ZERO);
-            data.put("costoTotal", BigDecimal.ZERO);
-            data.put("alertas", 0);
+            data.put("energiaKwh", item.getEnergiaKwh());
+            data.put("aguaM3", item.getAguaM3());
+            data.put("costoTotal", costoTotal);
+            data.put("alertas", alertasPorSede.getOrDefault(item.getSedeId(), 0L));
             return data;
         }).toList();
     }
 
     @GetMapping("/costos-por-mes")
     public List<Map<String, Object>> costosPorMes() {
-        return dashboardService.costosPorMes().stream()
-                .filter(item -> "PEN".equalsIgnoreCase(item.getMoneda()))
-                .map(this::costoPorMes)
-                .toList();
-    }
-
-    private Map<String, Object> costoPorMes(CostoPorMesResponse item) {
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("periodo", item.getPeriodo());
-        data.put("etiqueta", item.getPeriodo());
-        data.put("costoEnergia", item.getTotal());
-        data.put("costoAgua", BigDecimal.ZERO);
-        data.put("costoTotal", item.getTotal());
-        return data;
+        return dashboardService.costosPorMesSeparado().stream().map(item -> {
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("periodo", item.getPeriodo());
+            data.put("etiqueta", item.getPeriodo());
+            data.put("costoEnergia", item.getCostoEnergia());
+            data.put("costoAgua", item.getCostoAgua());
+            data.put("costoTotal", item.getCostoTotal());
+            return data;
+        }).toList();
     }
 }

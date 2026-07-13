@@ -69,36 +69,36 @@ SELECT s.id_sede, t.id_tipo_recurso, 1000, 800, '2026-01-01', 'ACTIVO'
 FROM sedes s, tipos_recurso t
 WHERE NOT EXISTS (SELECT 1 FROM umbrales u WHERE u.id_sede = s.id_sede AND u.id_tipo_recurso = t.id_tipo_recurso);
 
--- 11. CONSUMOS ALEATORIOS DE PRUEBA (solo si la tabla esta vacia)
--- Marzo 2026
+-- 11. CONSUMOS DE PRUEBA (una fila por sede + recurso + mes, idempotente por sede/periodo)
+-- Marzo 2026 - todas las sedes
 INSERT INTO consumos (id_sede, id_tipo_recurso, id_tarifa, id_usuario_registro, cantidad_consumida, fecha_consumo, periodo, creado_en)
 SELECT s.id_sede, t.id_tipo_recurso, tr.id_tarifa, u.id,
        ROUND((500 + random() * 1000)::numeric, 4),
        '2026-03-15', '2026-03', current_timestamp
 FROM sedes s, tipos_recurso t, tarifas_recurso tr, usuarios u
-WHERE s.nombre = 'Sede Lima' AND u.correo = 'admin@luxury.com'
+WHERE u.correo = 'admin@luxury.com'
   AND tr.id_sede = s.id_sede AND tr.id_tipo_recurso = t.id_tipo_recurso
-  AND NOT EXISTS (SELECT 1 FROM consumos);
+  AND NOT EXISTS (SELECT 1 FROM consumos c WHERE c.periodo = '2026-03' AND c.id_sede = s.id_sede);
 
--- Abril 2026
+-- Abril 2026 - todas las sedes
 INSERT INTO consumos (id_sede, id_tipo_recurso, id_tarifa, id_usuario_registro, cantidad_consumida, fecha_consumo, periodo, creado_en)
 SELECT s.id_sede, t.id_tipo_recurso, tr.id_tarifa, u.id,
        ROUND((500 + random() * 1000)::numeric, 4),
        '2026-04-15', '2026-04', current_timestamp
 FROM sedes s, tipos_recurso t, tarifas_recurso tr, usuarios u
-WHERE s.nombre = 'Sede Lima' AND u.correo = 'admin@luxury.com'
+WHERE u.correo = 'admin@luxury.com'
   AND tr.id_sede = s.id_sede AND tr.id_tipo_recurso = t.id_tipo_recurso
-  AND (SELECT count(*) FROM consumos) <= 3;
+  AND NOT EXISTS (SELECT 1 FROM consumos c WHERE c.periodo = '2026-04' AND c.id_sede = s.id_sede);
 
--- Mayo 2026
+-- Mayo 2026 - todas las sedes
 INSERT INTO consumos (id_sede, id_tipo_recurso, id_tarifa, id_usuario_registro, cantidad_consumida, fecha_consumo, periodo, creado_en)
 SELECT s.id_sede, t.id_tipo_recurso, tr.id_tarifa, u.id,
        ROUND((500 + random() * 1000)::numeric, 4),
        '2026-05-15', '2026-05', current_timestamp
 FROM sedes s, tipos_recurso t, tarifas_recurso tr, usuarios u
-WHERE s.nombre = 'Sede Lima' AND u.correo = 'admin@luxury.com'
+WHERE u.correo = 'admin@luxury.com'
   AND tr.id_sede = s.id_sede AND tr.id_tipo_recurso = t.id_tipo_recurso
-  AND (SELECT count(*) FROM consumos) <= 6;
+  AND NOT EXISTS (SELECT 1 FROM consumos c WHERE c.periodo = '2026-05' AND c.id_sede = s.id_sede);
 
 -- 12. COSTOS EN PEN para cada consumo (solo si no hay costos registrados)
 INSERT INTO consumo_costos (id_consumo, id_moneda, monto_calculado, fecha_calculo)

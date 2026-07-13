@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ConsumoPorSedeResponse {
-	private Long sedeId;
-	private String sede;
-	private BigDecimal energiaKwh;
-	private BigDecimal aguaM3;
+public class CostoPorMesSeparadoResponse {
+	private String periodo;
+	private BigDecimal costoEnergia;
+	private BigDecimal costoAgua;
+	private BigDecimal costoTotal;
 }

@@ -12,6 +12,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
+
 import com.example.luxury.dominios.common.enums.EstadoRegistro;
 import com.example.luxury.dominios.finanzas.dto.MonedaRequest;
 import com.example.luxury.dominios.finanzas.dto.MonedaResponse;
@@ -37,7 +44,7 @@ public class ApiFinancialController {
     }
 
     @PostMapping("/monedas")
-    public Map<String, Object> crearMoneda(@RequestBody MonedaApiRequest request) {
+    public Map<String, Object> crearMoneda(@Valid @RequestBody MonedaApiRequest request) {
         return ApiMapper.moneda(monedaService.crear(new MonedaRequest(request.codigo(), request.nombre())));
     }
 
@@ -48,13 +55,13 @@ public class ApiFinancialController {
     }
 
     @PostMapping("/tipos-cambio")
-    public Map<String, Object> crearTipoCambio(@RequestBody TipoCambioApiRequest request) {
+    public Map<String, Object> crearTipoCambio(@Valid @RequestBody TipoCambioApiRequest request) {
         List<MonedaResponse> monedas = monedaService.listar();
         return ApiMapper.tipoCambio(tipoCambioService.crear(toRequest(request, monedas)), monedas);
     }
 
     @PutMapping("/tipos-cambio")
-    public Map<String, Object> actualizarTipoCambio(@RequestBody TipoCambioApiRequest request) {
+    public Map<String, Object> actualizarTipoCambio(@Valid @RequestBody TipoCambioApiRequest request) {
         if (request.id() == null) {
             throw new IllegalArgumentException("El id del tipo de cambio es obligatorio.");
         }
@@ -79,10 +86,23 @@ public class ApiFinancialController {
                 .orElseThrow(() -> new IllegalArgumentException("Moneda no encontrada."));
     }
 
-    public record MonedaApiRequest(String codigo, String nombre, String simbolo) {
+    public record MonedaApiRequest(
+            @NotBlank(message = "El codigo de moneda es obligatorio.")
+            @Size(min = 3, max = 3, message = "El codigo debe tener 3 letras.")
+            @Pattern(regexp = "[A-Z]{3}", message = "El codigo debe estar en mayusculas.") String codigo,
+            @NotBlank(message = "El nombre de moneda es obligatorio.") String nombre,
+            String simbolo) {
     }
 
-    public record TipoCambioApiRequest(Long id, Long monedaOrigenId, Long monedaDestinoId, BigDecimal tasa,
-            String fechaVigencia, String fuente, Boolean activo) {
+    public record TipoCambioApiRequest(
+            Long id,
+            @NotNull(message = "monedaOrigenId es obligatorio.") Long monedaOrigenId,
+            @NotNull(message = "monedaDestinoId es obligatorio.") Long monedaDestinoId,
+            @NotNull(message = "tasa es obligatoria.")
+            @Positive(message = "La tasa debe ser mayor a cero.") BigDecimal tasa,
+            @NotBlank(message = "fechaVigencia es obligatoria.")
+            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Formato YYYY-MM-DD.") String fechaVigencia,
+            String fuente,
+            Boolean activo) {
     }
 }

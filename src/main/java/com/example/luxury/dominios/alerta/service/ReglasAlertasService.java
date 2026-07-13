@@ -74,6 +74,12 @@ public class ReglasAlertasService {
 		return alerta;
 	}
 
+	public void eliminar(Long id) {
+		alertaRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("Alerta no encontrada"));
+		alertaRepository.deleteById(id);
+	}
+
 	public Alerta crearManual(String mensaje, NivelAlerta nivel) {
 		Alerta alerta = new Alerta();
 		alerta.setTipoAlerta(TipoAlerta.OTRO);
