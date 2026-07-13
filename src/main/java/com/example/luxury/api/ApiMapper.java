@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.example.luxury.api.dto.ConsumoApiResponse;
+import com.example.luxury.api.dto.UsuarioApiResponse;
 import com.example.luxury.dominios.alerta.dto.AlertaResponse;
 import com.example.luxury.dominios.auditoria.dto.AuditoriaResponse;
 import com.example.luxury.dominios.common.enums.EstadoAlerta;
@@ -42,7 +44,7 @@ final class ApiMapper {
         data.put("apellidos", usuario.getApellidos());
         data.put("nombreCompleto", usuario.getNombres() + " " + usuario.getApellidos());
         data.put("sedeId", null);
-        data.put("sedeNombre", "Luxury Corporate");
+        data.put("sedeNombre", null);
         data.put("tipoDocumento", usuario.getTipoDocumento());
         data.put("numeroDocumento", usuario.getNumeroDocumento());
         data.put("telefono", usuario.getTelefono());
@@ -62,7 +64,7 @@ final class ApiMapper {
         data.put("apellidos", usuario.getApellidos());
         data.put("nombreCompleto", usuario.getNombreCompleto());
         data.put("sedeId", null);
-        data.put("sedeNombre", "Luxury Corporate");
+        data.put("sedeNombre", null);
         data.put("tipoDocumento", usuario.getTipoDocumento());
         data.put("numeroDocumento", usuario.getNumeroDocumento());
         data.put("telefono", usuario.getTelefono());
@@ -73,6 +75,72 @@ final class ApiMapper {
         data.put("fechaRegistro", usuario.getFechaRegistro());
         data.put("fechaActualizacion", usuario.getFechaActualizacion());
         return data;
+    }
+
+    static UsuarioApiResponse usuarioDto(UsuarioResponse usuario) {
+        return new UsuarioApiResponse(
+                usuario.getId(),
+                usuario.getNombres(),
+                usuario.getApellidos(),
+                usuario.getNombreCompleto(),
+                null,
+                null,
+                usuario.getTipoDocumento() == null ? null : usuario.getTipoDocumento().name(),
+                usuario.getNumeroDocumento(),
+                usuario.getTelefono(),
+                usuario.getCorreo(),
+                usuario.isActivo(),
+                usuario.getEstado(),
+                usuario.getRoles(),
+                usuario.getFechaRegistro(),
+                usuario.getFechaActualizacion());
+    }
+
+    static UsuarioApiResponse usuarioDto(Usuario usuario) {
+        String roles = usuario.getRoles().stream()
+                .map(rol -> rol.getNombre().name())
+                .sorted()
+                .reduce((actual, siguiente) -> actual + ", " + siguiente)
+                .orElse(NombreRol.OPERADOR.name());
+        return new UsuarioApiResponse(
+                usuario.getId(),
+                usuario.getNombres(),
+                usuario.getApellidos(),
+                usuario.getNombres() + " " + usuario.getApellidos(),
+                null,
+                null,
+                usuario.getTipoDocumento() == null ? null : usuario.getTipoDocumento().name(),
+                usuario.getNumeroDocumento(),
+                usuario.getTelefono(),
+                usuario.getCorreo(),
+                usuario.isActivo(),
+                usuario.isActivo() ? "ACTIVO" : "INACTIVO",
+                roles,
+                usuario.getFechaRegistro(),
+                usuario.getFechaActualizacion());
+    }
+
+    static ConsumoApiResponse consumoDto(ConsumoResponse consumo) {
+        BigDecimal costo = consumo.getCostos().stream()
+                .filter(item -> "PEN".equalsIgnoreCase(item.getMoneda()))
+                .map(item -> item.getMonto())
+                .findFirst()
+                .orElse(BigDecimal.ZERO);
+        return new ConsumoApiResponse(
+                consumo.getId(),
+                consumo.getSedeId(),
+                consumo.getSede(),
+                consumo.getTipoRecursoId(),
+                codigoRecurso(consumo.getTipoRecurso()),
+                consumo.getTipoRecurso(),
+                unidad(consumo.getUnidadMedida()),
+                consumo.getPeriodo(),
+                consumo.getCreadoEn(),
+                consumo.getCantidadConsumida(),
+                costo,
+                "PEN",
+                "REGISTRADO",
+                "Registrado desde backend");
     }
 
     static Map<String, Object> sede(SedeResponse sede) {
@@ -345,7 +413,7 @@ final class ApiMapper {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("sedeId", 0L);
         data.put("sedeNombre", row.getSede());
-        data.put("ciudad", "Lima");
+        data.put("ciudad", null);
         data.put("costoTotal", row.getCostoPen());
         data.put("consumoEnergiaKwh", "Luz".equalsIgnoreCase(row.getTipoRecurso()) ? row.getTotalConsumido() : BigDecimal.ZERO);
         data.put("consumoAguaM3", "Agua".equalsIgnoreCase(row.getTipoRecurso()) ? row.getTotalConsumido() : BigDecimal.ZERO);

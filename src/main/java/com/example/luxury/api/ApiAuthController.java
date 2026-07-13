@@ -10,6 +10,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+import com.example.luxury.api.dto.UsuarioApiResponse;
 import com.example.luxury.dominios.seguridad.dto.request.UsuarioRequest;
 import com.example.luxury.dominios.seguridad.enums.NombreRol;
 import com.example.luxury.dominios.seguridad.enums.TipoDocumento;
@@ -36,7 +43,7 @@ public class ApiAuthController {
     }
 
     @PostMapping("/login")
-    public Map<String, Object> login(@RequestBody LoginApiRequest request) {
+    public Map<String, Object> login(@Valid @RequestBody LoginApiRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.identificador(), request.contrasena()));
 
@@ -46,13 +53,13 @@ public class ApiAuthController {
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("token", tokenService.generarToken(usuario));
         data.put("tipo", "Bearer");
-        data.put("usuario", ApiMapper.usuario(usuario));
+        data.put("usuario", ApiMapper.usuarioDto(usuario));
         data.put("expiraEnSegundos", tokenService.obtenerExpiracionSegundos());
         return data;
     }
 
     @PostMapping("/registro")
-    public Map<String, Object> registro(@RequestBody RegistroApiRequest request) {
+    public UsuarioApiResponse registro(@Valid @RequestBody RegistroApiRequest request) {
         UsuarioRequest usuarioRequest = new UsuarioRequest(
                 request.nombres(),
                 request.apellidos(),
@@ -63,13 +70,25 @@ public class ApiAuthController {
                 request.contrasena(),
                 NombreRol.OPERADOR,
                 true);
-        return ApiMapper.usuario(gestionUsuarioService.crear(usuarioRequest));
+        return ApiMapper.usuarioDto(gestionUsuarioService.crear(usuarioRequest));
     }
 
-    public record LoginApiRequest(String identificador, String contrasena) {
+    public record LoginApiRequest(
+            @NotBlank(message = "El identificador es obligatorio.") String identificador,
+            @NotBlank(message = "La contrasena es obligatoria.") String contrasena) {
     }
 
-    public record RegistroApiRequest(String nombres, String apellidos, String tipoDocumento, String numeroDocumento,
-            String telefono, String correo, String contrasena) {
+    public record RegistroApiRequest(
+            @NotBlank(message = "Los nombres son obligatorios.") String nombres,
+            @NotBlank(message = "Los apellidos son obligatorios.") String apellidos,
+            @NotBlank @Pattern(regexp = "DNI|CE|PASAPORTE", message = "Tipo de documento invalido.") String tipoDocumento,
+            @NotBlank(message = "El numero de documento es obligatorio.")
+            @Pattern(regexp = "\\d{8,20}", message = "El documento debe tener entre 8 y 20 digitos.") String numeroDocumento,
+            @NotBlank(message = "El telefono es obligatorio.")
+            @Pattern(regexp = "\\d{9}", message = "El telefono debe tener 9 digitos.") String telefono,
+            @NotBlank(message = "El correo es obligatorio.")
+            @Email(message = "El correo no es valido.") String correo,
+            @NotBlank(message = "La contrasena es obligatoria.")
+            @Size(min = 6, message = "La contrasena debe tener al menos 6 caracteres.") String contrasena) {
     }
 }

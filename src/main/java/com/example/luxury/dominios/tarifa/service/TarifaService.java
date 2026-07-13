@@ -48,6 +48,12 @@ public class TarifaService {
 		return TarifaResponse.from(buscarVigente(sedeId, tipoRecursoId, LocalDate.now()));
 	}
 
+	public void eliminar(Long id) {
+		TarifaRecurso tarifa = buscar(id);
+		tarifa.setEstado(EstadoRegistro.INACTIVO);
+		tarifaRepository.save(tarifa);
+	}
+
 	public TarifaRecurso buscar(Long id) {
 		Optional<TarifaRecurso> tarifaOptional = tarifaRepository.findById(id);
 		if (tarifaOptional.isPresent()) {

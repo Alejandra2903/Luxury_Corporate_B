@@ -16,10 +16,18 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Positive;
+
 import com.example.luxury.dominios.alerta.dto.AlertaResponse;
 import com.example.luxury.dominios.alerta.service.ReglasAlertasService;
+import com.example.luxury.dominios.auditoria.service.AuditoriaService;
 import com.example.luxury.dominios.common.enums.EstadoRegistro;
 import com.example.luxury.dominios.common.enums.NivelAlerta;
+import com.example.luxury.dominios.seguridad.services.AuthenticatedUserService;
 import com.example.luxury.dominios.tarifa.dto.TarifaRequest;
 import com.example.luxury.dominios.tarifa.service.TarifaService;
 import com.example.luxury.dominios.umbral.dto.UmbralRequest;
@@ -32,12 +40,17 @@ public class ApiBusinessRulesController {
     private final TarifaService tarifaService;
     private final UmbralService umbralService;
     private final ReglasAlertasService alertasService;
+    private final AuditoriaService auditoriaService;
+    private final AuthenticatedUserService authenticatedUserService;
 
     public ApiBusinessRulesController(TarifaService tarifaService, UmbralService umbralService,
-            ReglasAlertasService alertasService) {
+            ReglasAlertasService alertasService, AuditoriaService auditoriaService,
+            AuthenticatedUserService authenticatedUserService) {
         this.tarifaService = tarifaService;
         this.umbralService = umbralService;
         this.alertasService = alertasService;
+        this.auditoriaService = auditoriaService;
+        this.authenticatedUserService = authenticatedUserService;
     }
 
     @GetMapping("/tarifas")
@@ -46,16 +59,21 @@ public class ApiBusinessRulesController {
     }
 
     @PostMapping("/tarifas")
-    public Map<String, Object> crearTarifa(@RequestBody TarifaApiRequest request) {
+    public Map<String, Object> crearTarifa(@Valid @RequestBody TarifaApiRequest request) {
         return ApiMapper.tarifa(tarifaService.crear(toTarifaRequest(request)));
     }
 
     @PutMapping("/tarifas")
-    public Map<String, Object> actualizarTarifa(@RequestBody TarifaApiRequest request) {
+    public Map<String, Object> actualizarTarifa(@Valid @RequestBody TarifaApiRequest request) {
         if (request.id() == null) {
             throw new IllegalArgumentException("El id de tarifa es obligatorio.");
         }
         return ApiMapper.tarifa(tarifaService.actualizar(request.id(), toTarifaRequest(request)));
+    }
+
+    @DeleteMapping("/tarifas/{id}")
+    public void eliminarTarifa(@PathVariable Long id) {
+        tarifaService.eliminar(id);
     }
 
     @GetMapping("/tarifas/vigente")
@@ -69,12 +87,12 @@ public class ApiBusinessRulesController {
     }
 
     @PostMapping("/umbrales")
-    public Map<String, Object> crearUmbral(@RequestBody UmbralApiRequest request) {
+    public Map<String, Object> crearUmbral(@Valid @RequestBody UmbralApiRequest request) {
         return ApiMapper.umbral(umbralService.crear(toUmbralRequest(request)));
     }
 
     @PutMapping("/umbrales")
-    public Map<String, Object> actualizarUmbral(@RequestBody UmbralApiRequest request) {
+    public Map<String, Object> actualizarUmbral(@Valid @RequestBody UmbralApiRequest request) {
         if (request.id() == null) {
             throw new IllegalArgumentException("El id del umbral es obligatorio.");
         }
@@ -92,18 +110,33 @@ public class ApiBusinessRulesController {
     }
 
     @PostMapping("/alertas")
-    public Map<String, Object> crearAlerta(@RequestBody AlertaApiRequest request) {
+    public Map<String, Object> crearAlerta(@Valid @RequestBody AlertaApiRequest request) {
         return ApiMapper.alerta(AlertaResponse.from(alertasService.crearManual(request.mensaje(), NivelAlerta.valueOf(request.severidad()))));
     }
 
     @PatchMapping("/alertas/{id}/atender")
     public Map<String, Object> atenderAlerta(@PathVariable Long id) {
-        return ApiMapper.alerta(AlertaResponse.from(alertasService.atender(id)));
+        Map<String, Object> resultado = ApiMapper.alerta(AlertaResponse.from(alertasService.atender(id)));
+        auditar("ALERTAS", "ATENCION_ALERTA", "alertas", id, "Atencion de alerta " + id);
+        return resultado;
+    }
+
+    @DeleteMapping("/alertas/{id}")
+    public void eliminarAlerta(@PathVariable Long id) {
+        alertasService.eliminar(id);
     }
 
     @GetMapping("/alertas/sede/{idSede}")
     public List<Map<String, Object>> listarAlertasPorSede(@PathVariable Long idSede) {
         return alertasService.listarPorSede(idSede).stream().map(AlertaResponse::from).map(ApiMapper::alerta).toList();
+    }
+
+    private void auditar(String modulo, String accion, String tabla, Long registroId, String descripcion) {
+        try {
+            auditoriaService.registrar(authenticatedUserService.actual(), modulo, accion, tabla, registroId, descripcion);
+        } catch (RuntimeException ignored) {
+            // El registro de auditoria no debe interrumpir la operacion principal.
+        }
     }
 
     private TarifaRequest toTarifaRequest(TarifaApiRequest request) {
@@ -127,14 +160,35 @@ public class ApiBusinessRulesController {
                 request.activo() == null || request.activo() ? EstadoRegistro.ACTIVO : EstadoRegistro.INACTIVO);
     }
 
-    public record TarifaApiRequest(Long id, Long sedeId, Long tipoRecursoId, Long monedaId, BigDecimal costoUnitario,
-            String fechaInicio, String fechaFin, Boolean vigente) {
+    public record TarifaApiRequest(
+            Long id,
+            @NotNull(message = "sedeId es obligatorio.") Long sedeId,
+            @NotNull(message = "tipoRecursoId es obligatorio.") Long tipoRecursoId,
+            Long monedaId,
+            @NotNull(message = "costoUnitario es obligatorio.")
+            @Positive(message = "El costo debe ser mayor a cero.") BigDecimal costoUnitario,
+            @NotBlank(message = "fechaInicio es obligatoria.")
+            @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "Formato YYYY-MM-DD.") String fechaInicio,
+            String fechaFin,
+            Boolean vigente) {
     }
 
-    public record UmbralApiRequest(Long id, Long sedeId, Long tipoRecursoId, BigDecimal minimo, BigDecimal maximo,
-            String periodo, Boolean activo) {
+    public record UmbralApiRequest(
+            Long id,
+            @NotNull(message = "sedeId es obligatorio.") Long sedeId,
+            @NotNull(message = "tipoRecursoId es obligatorio.") Long tipoRecursoId,
+            BigDecimal minimo,
+            @NotNull(message = "maximo es obligatorio.")
+            @Positive(message = "El limite maximo debe ser mayor a cero.") BigDecimal maximo,
+            String periodo,
+            Boolean activo) {
     }
 
-    public record AlertaApiRequest(Long sedeId, Long tipoRecursoId, String severidad, String mensaje) {
+    public record AlertaApiRequest(
+            Long sedeId,
+            Long tipoRecursoId,
+            @NotBlank(message = "La severidad es obligatoria.")
+            @Pattern(regexp = "CRITICA|ALTA|MEDIA|BAJA", message = "Severidad invalida.") String severidad,
+            @NotBlank(message = "El mensaje es obligatorio.") String mensaje) {
     }
 }

@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.luxury.dominios.alerta.service.ReglasAlertasService;
@@ -75,6 +77,10 @@ public class ConsumoService {
 
 	public List<ConsumoResponse> listar() {
 		return consumoRepository.findAll().stream().map(this::toResponse).toList();
+	}
+
+	public Page<ConsumoResponse> listarPaginado(Pageable pageable) {
+		return consumoRepository.findAll(pageable).map(this::toResponse);
 	}
 
 	public ConsumoResponse obtener(Long id) {
