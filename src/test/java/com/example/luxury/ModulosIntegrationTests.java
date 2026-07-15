@@ -15,13 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.view;
 
-/**
- * Cobertura complementaria a AuthAndConsumoIntegrationTests.
- * Cada bloque corresponde a un modulo del sistema (matriz de roles en API.md)
- * y prueba en conjunto: vista Thymeleaf (frontend), submit de formulario
- * (integracion) y endpoint REST equivalente (backend), incluyendo el caso
- * negativo de rol sin permiso (403).
- */
+
 @SpringBootTest
 @AutoConfigureMockMvc
 class ModulosIntegrationTests {
@@ -29,7 +23,7 @@ class ModulosIntegrationTests {
 	@Autowired
 	private MockMvc mockMvc;
 
-	// ---------- SEDES ----------
+
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "ADMIN")
@@ -63,25 +57,17 @@ class ModulosIntegrationTests {
 	@Test
 	@WithMockUser(username = "12345678", roles = "AUDITOR")
 	void apiSedesAuditorRecibe403() throws Exception {
-		// AUDITOR no esta en la lista de roles permitidos para /api/sedes/**
+	
 		mockMvc.perform(get("/api/sedes"))
 				.andExpect(status().isForbidden())
 				.andExpect(jsonPath("$.status").value(403));
 	}
 
-	// ---------- TIPOS DE RECURSO ----------
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "OPERADOR")
 	void tiposRecursoListaMvcFallaPorTemplateFaltante() {
-		// BUG CONOCIDO: TipoRecursoController.listar() retorna la vista
-		// "tipos-recurso/lista", pero src/main/resources/templates/tipos-recurso/
-		// no existe en el proyecto. El error de Thymeleaf ocurre en la fase de
-		// renderizado (despues del controller), por lo que ningun exception
-		// handler lo intercepta: MockMvc.perform() propaga un ServletException
-		// en vez de devolver un status HTTP. Este test documenta el bug.
-		// Cuando se agregue la plantilla, reemplazar este test por uno que
-		// verifique status().isOk() y view().name("tipos-recurso/lista").
+		
 		Exception ex = org.junit.jupiter.api.Assertions.assertThrows(Exception.class,
 				() -> mockMvc.perform(get("/tipos-recurso")));
 		org.junit.jupiter.api.Assertions.assertTrue(
@@ -103,7 +89,7 @@ class ModulosIntegrationTests {
 				.andExpect(jsonPath("$.nombre").value("Internet"));
 	}
 
-	// ---------- TARIFAS ----------
+	
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "GERENTE")
@@ -129,7 +115,7 @@ class ModulosIntegrationTests {
 				.andExpect(status().isForbidden());
 	}
 
-	// ---------- UMBRALES ----------
+
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "ADMIN")
@@ -150,7 +136,7 @@ class ModulosIntegrationTests {
 				.andExpect(jsonPath("$.id").isNumber());
 	}
 
-	// ---------- ALERTAS (complementa lo ya cubierto) ----------
+	
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "GERENTE")
@@ -160,7 +146,7 @@ class ModulosIntegrationTests {
 				.andExpect(view().name("alertas/lista"));
 	}
 
-	// ---------- FINANZAS: MONEDAS / TIPOS DE CAMBIO ----------
+	
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "ADMIN")
@@ -186,7 +172,7 @@ class ModulosIntegrationTests {
 	@Test
 	@WithMockUser(username = "00000000", roles = "ADMIN")
 	void apiTiposCambioCrearExitoso() throws Exception {
-		// Semillas de data.sql insertan monedas en orden PEN(1), USD(2), EUR(3)
+		
 		mockMvc.perform(post("/api/tipos-cambio")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
@@ -205,12 +191,11 @@ class ModulosIntegrationTests {
 	@Test
 	@WithMockUser(username = "12345678", roles = "ANALISTA")
 	void apiMonedasAnalistaRecibe403() throws Exception {
-		// Finanzas es solo ADMIN/GERENTE
+		
 		mockMvc.perform(get("/api/monedas"))
 				.andExpect(status().isForbidden());
 	}
 
-	// ---------- AUDITORIA / EVENTOS DE ACCESO ----------
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "AUDITOR")
@@ -223,8 +208,7 @@ class ModulosIntegrationTests {
 	@Test
 	@WithMockUser(username = "12345678", roles = "GERENTE")
 	void auditoriasMvcGerenteRedirigeAError() throws Exception {
-		// Solo ADMIN/AUDITOR segun SecurityConfig. En rutas MVC (no /api/**),
-		// el accessDeniedHandler redirige a /error en vez de devolver 403 puro.
+		
 		mockMvc.perform(get("/auditorias"))
 				.andExpect(status().isFound())
 				.andExpect(redirectedUrlPattern("/error*"));
@@ -238,7 +222,7 @@ class ModulosIntegrationTests {
 				.andExpect(jsonPath("$").isArray());
 	}
 
-	// ---------- DASHBOARD (endpoints adicionales) ----------
+
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "ANALISTA")
@@ -259,14 +243,13 @@ class ModulosIntegrationTests {
 	@Test
 	@WithMockUser(username = "00000000", roles = "OPERADOR")
 	void dashboardVistaOperadorRedirigeAError() throws Exception {
-		// Operador no esta en la lista de roles para "/", "/dashboard/**".
-		// En MVC el accessDeniedHandler redirige a /error (302), no da 403 puro.
+		
 		mockMvc.perform(get("/dashboard"))
 				.andExpect(status().isFound())
 				.andExpect(redirectedUrlPattern("/error*"));
 	}
 
-	// ---------- REPORTES ----------
+	
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "ANALISTA")
@@ -284,7 +267,7 @@ class ModulosIntegrationTests {
 				.andExpect(view().name("reportes/mensual"));
 	}
 
-	// ---------- MONITOREO DE SESIONES ----------
+	
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "ANALISTA")
@@ -310,12 +293,12 @@ class ModulosIntegrationTests {
 				.andExpect(status().isForbidden());
 	}
 
-	// ---------- HUECOS ADICIONALES (seccion 7 del plan de testeo) ----------
+
 
 	@Test
 	@WithMockUser(username = "00000000", roles = "ADMIN")
 	void apiUsuariosPatchCambiaEstadoActivo() throws Exception {
-		// Usuario admin sembrado (id 1) esta activo; lo desactivamos y reactivamos.
+		
 		mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/api/usuarios")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("{ \"id\": 1, \"activo\": false }"))
@@ -332,7 +315,7 @@ class ModulosIntegrationTests {
 	@Test
 	@WithMockUser(username = "00000000", roles = "ADMIN")
 	void sedeEditarYEliminarPorFormularioFuncionan() throws Exception {
-		// Sede 2 = "Sede Piura" (semilla de data.sql)
+		
 		mockMvc.perform(get("/sedes/2/editar"))
 				.andExpect(status().isOk())
 				.andExpect(view().name("sedes/formulario"))
@@ -350,7 +333,7 @@ class ModulosIntegrationTests {
 				.andExpect(status().isFound())
 				.andExpect(redirectedUrlPattern("/sedes*"));
 
-		// La baja es logica: la sede sigue existiendo pero queda inactiva
+		
 		mockMvc.perform(get("/api/sedes"))
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("$[?(@.id == 2)].activa").value(
@@ -360,9 +343,7 @@ class ModulosIntegrationTests {
 	@Test
 	@WithMockUser(username = "00000000", roles = "ADMIN")
 	void consumoQueSuperaUmbralGeneraAlertaAutomatica() throws Exception {
-		// Umbral semillado para sede 1 / tipoRecurso 1: limiteConsumo=1000,
-		// limitePresupuestoPen=800. Un consumo de 5000 (tarifa 0.85/unidad,
-		// costo=4250) supera ambos limites y debe disparar alertas automaticas.
+	
 		mockMvc.perform(post("/api/consumos")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
@@ -413,7 +394,7 @@ class ModulosIntegrationTests {
 						"El formato del periodo es incorrecto")));
 	}
 
-	// ---------- AUTENTICACION: REGISTRO PUBLICO ----------
+
 
 
 	@Test
