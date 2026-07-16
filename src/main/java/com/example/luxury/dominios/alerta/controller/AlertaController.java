@@ -1,7 +1,6 @@
 package com.example.luxury.dominios.alerta.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -9,7 +8,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.luxury.dominios.alerta.dto.AlertaResponse;
 import com.example.luxury.dominios.alerta.service.ReglasAlertasService;
 
-@Controller
+@RestController
 @RequestMapping("/alertas")
 public class AlertaController {
 

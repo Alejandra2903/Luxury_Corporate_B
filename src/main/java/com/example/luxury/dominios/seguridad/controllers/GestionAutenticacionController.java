@@ -4,13 +4,13 @@ import java.time.Duration;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,7 +23,7 @@ import com.example.luxury.dominios.seguridad.repositories.UsuarioRepository;
 import com.example.luxury.dominios.seguridad.services.AutenticacionService;
 import com.example.luxury.dominios.seguridad.services.TokenService;
 
-@Controller
+@RestController
 @RequestMapping("/auth")
 public class GestionAutenticacionController {
 
